@@ -1,18 +1,37 @@
 import { Link, useNavigate } from "react-router-dom";
 import "../style/OrdersPage.css";
-import orders from "../../newJsonUsers199.json";
 import { useContext } from "react";
 import { AuthContext } from "../context/auth";
 import { useState } from "react";
+import { useEffect } from "react";
+import axios from "axios";
 
 const OrdersPage = () => {
+  const [request, setRequest] = useState([]);
   const { newUser, setNewUser } = useContext(AuthContext);
   const [amount, setAmount] = useState("");
   const navigate = useNavigate();
 
+  const baseUrl =
+    "http://www.filltext.com/?rows=9&id={index}&creationTime={date|10-10-2010,10-12-2010}&changeTime={date|10-10-2010,10-12-2010}&status=active&side=Buy&price={randomNumber|1to10}&amount={randomNumber|500000}&instrument=CNH/RUB&pretty=true";
+
+  useEffect(() => {
+    axios.get(baseUrl).then((res) => {
+      setRequest(res.data);
+    });
+  }, []);
+
   let handleOut = () => {
     setNewUser(null);
     return navigate("/");
+  };
+
+  const sortData = (field) => {
+    const copyData = request.concat();
+    const sortData = copyData.sort((a, b) => {
+      return a[field] > b[field] ? 1 : -1;
+    });
+    setRequest(sortData);
   };
 
   return (
@@ -53,37 +72,86 @@ const OrdersPage = () => {
           </div>
           <div className="title">
             <h1>Список заявок</h1>
-            <button className="btn-title">По номеру заявки</button>
           </div>
           <div className="order-content">
             <table>
               <thead className="thead">
                 <tr className="tr">
-                  <td className="td td-left">Идентификатор</td>
-                  <td className="td ">Время создания</td>
-                  <td className="td">Время последнего изменения статуса</td>
-                  <td className="td ">Статус</td>
-                  <td className="td ">Сторона</td>
-                  <td className="td ">Цена</td>
-                  <td className="td">Объем </td>
-                  <td className="td td-last">Торговый инструмент</td>
+                  <td
+                    className="td td-left"
+                    onClick={() => {
+                      sortData("id");
+                    }}>
+                    Идентификатор
+                  </td>
+                  <td
+                    className="td"
+                    onClick={() => {
+                      sortData("creationTime");
+                    }}>
+                    Время создания
+                  </td>
+                  <td
+                    className="td"
+                    onClick={() => {
+                      sortData("changeTime");
+                    }}>
+                    Время последнего изменения статуса
+                  </td>
+                  <td
+                    className="td "
+                    onClick={() => {
+                      sortData("status");
+                    }}>
+                    Статус
+                  </td>
+                  <td
+                    className="td "
+                    onClick={() => {
+                      sortData("side");
+                    }}>
+                    Сторона
+                  </td>
+                  <td
+                    className="td "
+                    onClick={() => {
+                      sortData("price");
+                    }}>
+                    Цена
+                  </td>
+                  <td
+                    className="td"
+                    onClick={() => {
+                      sortData("amount");
+                    }}>
+                    Объем{" "}
+                  </td>
+                  <td
+                    className="td td-last"
+                    onClick={() => {
+                      sortData("instrument");
+                    }}>
+                    Торговый инструмент
+                  </td>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => {
+                {request.map((item) => {
                   return (
-                    <tr key={order.id}>
+                    <tr key={item.id}>
                       <td className="td td-main td-left-main">
                         <div className="border"></div>
-                        {order.id}
+                        {item.id}
                       </td>
-                      <td className="td td-main">{order.email}</td>
-                      <td className="td td-main">{order.amount}</td>
-                      <td className="td td-main">{order.date}</td>
-                      <td className="td td-main">{order.email}</td>
-                      <td className="td td-main">{order.amount}</td>
-                      <td className="td td-main ">{order.date}</td>
-                      <td className="td td-main td-last-main">{order.date}</td>
+                      <td className="td td-main">{item.creationTime}</td>
+                      <td className="td td-main">{item.changeTime}</td>
+                      <td className="td td-main">{item.status}</td>
+                      <td className="td td-main">{item.side}</td>
+                      <td className="td td-main">{item.price}</td>
+                      <td className="td td-main ">{item.amount}</td>
+                      <td className="td td-main td-last-main">
+                        {item.instrument}
+                      </td>
                     </tr>
                   );
                 })}
